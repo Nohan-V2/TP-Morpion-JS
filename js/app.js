@@ -4,17 +4,27 @@ const $newGameScreenPickPlayerIcons = document.querySelectorAll(
 const $newGameScreenNewGameCpuPlayer = document.querySelector(
   ".new-game-screen-new-game-buttons__button"
 );
+const $newGameScreenNewGameVsPlayer = document.querySelector(
+  ".new-game-screen-new-game-buttons__button--secondary"
+);
+
 const $newGameScreen = document.querySelector(".new-game-screen");
 const $gameScreen = document.querySelector(".game-screen");
 const $gameScreenGridCells = document.querySelectorAll(
   ".game-screen-grid__cell"
 );
 
-const $gameScreenHeaderRestartBtn = document.querySelector(
-  ".game-screen-header-restart-btn"
+const $gameScreenEndGameModal = document.querySelector(
+  ".game-screen-end-game-modal"
 );
 
 let currentPlayer = "o";
+const iconPlayer = ["o"];
+let gameBoard = [
+  ["", "", ""],
+  ["", "", ""],
+  ["", "", ""],
+];
 
 const crossIcon = `<svg
     width="40"
@@ -48,6 +58,50 @@ const ovalIcon = `<svg
 </svg>
 `;
 
+function checkWin(board) {
+  // Vérifier les lignes
+  for (let i = 0; i < 3; i++) {
+    if (
+      board[i][0] !== "" &&
+      board[i][0] === board[i][1] &&
+      board[i][1] === board[i][2]
+    ) {
+      return true;
+    }
+  }
+
+  // Vérifier les colonnes
+  for (let i = 0; i < 3; i++) {
+    if (
+      board[0][i] !== "" &&
+      board[0][i] === board[1][i] &&
+      board[1][i] === board[2][i]
+    ) {
+      return true;
+    }
+  }
+
+  // Vérifier la diagonale principale
+  if (
+    board[0][0] !== "" &&
+    board[0][0] === board[1][1] &&
+    board[1][1] === board[2][2]
+  ) {
+    return true;
+  }
+
+  // Vérifier la diagonale secondaire
+  if (
+    board[0][2] !== "" &&
+    board[0][2] === board[1][1] &&
+    board[1][1] === board[2][0]
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
 $newGameScreenPickPlayerIcons.forEach(function ($newGameScreenPickPlayerIcon) {
   $newGameScreenPickPlayerIcon.addEventListener("click", function () {
     for (let i = 0; i < $newGameScreenPickPlayerIcons.length; i++) {
@@ -59,9 +113,14 @@ $newGameScreenPickPlayerIcons.forEach(function ($newGameScreenPickPlayerIcon) {
     $newGameScreenPickPlayerIcon.classList.add(
       "new-game-screen-pick-player-icon--selected"
     );
+
     currentPlayer = $newGameScreenPickPlayerIcon.getAttribute("data-player");
 
+    iconPlayer.shift();
+    iconPlayer.push(currentPlayer);
+
     console.log(currentPlayer);
+    console.log(iconPlayer);
   });
 });
 
@@ -70,26 +129,42 @@ $newGameScreenNewGameCpuPlayer.addEventListener("click", function () {
   $gameScreen.classList.remove("hidden");
 });
 
-$gameScreenGridCells.forEach(function ($gameScreenGridCell) {
-  $gameScreenGridCell.innerHTML = "";
+$newGameScreenNewGameVsPlayer.addEventListener("click", function () {
+  $newGameScreen.classList.add("hidden");
+  $gameScreen.classList.remove("hidden");
 });
 
 $gameScreenGridCells.forEach(function ($gameScreenGridCell) {
+  $gameScreenGridCell.innerHTML = "";
+
   $gameScreenGridCell.addEventListener("click", function () {
+    const dataX = $gameScreenGridCell.getAttribute("data-x");
+    const dataY = $gameScreenGridCell.getAttribute("data-y");
+
+    gameBoard[dataY][dataX] = currentPlayer;
+
+    console.log(gameBoard);
+
+    console.log(checkWin(gameBoard));
+
     if ($gameScreenGridCell.hasChildNodes() === false) {
       if (currentPlayer === "x") {
         $gameScreenGridCell.innerHTML = crossIcon;
+        if (checkWin(gameBoard) && iconPlayer.lastIndexOf() === currentPlayer) {
+          $gameScreenEndGameModal.classList.remove("hidden");
+
+          console.log("Victory");
+        }
         currentPlayer = "o";
       } else {
         $gameScreenGridCell.innerHTML = ovalIcon;
+        if (checkWin(gameBoard) && iconPlayer.lastIndexOf() === currentPlayer) {
+          $gameScreenEndGameModal.classList.remove("hidden");
+
+          console.log("Defeat");
+        }
         currentPlayer = "x";
       }
     }
   });
-});
-
-$gameScreenHeaderRestartBtn.addEventListener("click", function (e) {
-  window.location("../pages/game.html");
-
-  console.log("restart");
 });
